@@ -24,10 +24,11 @@
 
 ## 📑 Contents
 
-- [📰 News](#news)
+- [📰 News]
    - **2026-02-24:** TA-ISP is accepted by CVPR 2026
 
-- [📚 Citation](#citation)
+- [📚 Citation]
+
 Please cite our work if it is helpful for your research:
 
 ```
@@ -45,11 +46,9 @@ Please cite our work if it is helpful for your research:
 
 ## Related Repositories
 
-- [ECCV24_RAW_Adapter](https://github.com/cuiziteng/ECCV_RAW_Adapter): 
+- [ECCV2024-RAW_Adapter](https://github.com/cuiziteng/ECCV_RAW_Adapter): 
 
-## <a name="news"></a> 📰 News
-- The code will be coming soon.
 
 ## Contact
 
-If you have any questions, feel free to approach me at kkchen318@gmail.com -->
+If you have any questions, feel free to approach me at kkchen318@gmail.com.
