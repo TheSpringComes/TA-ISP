@@ -77,7 +77,7 @@ model = dict(
 
 
 dataset_type = 'PASCAL_RAW'
-data_root = './data/PASCAL_RAW/'
+data_root = '/home/jing/datasets/PASCAL_RAW/PASCAL_RAW_github/PASCAL_RAW_github/'
 
 
 backend_args = None

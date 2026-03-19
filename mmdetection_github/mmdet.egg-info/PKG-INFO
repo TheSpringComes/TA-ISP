@@ -25,7 +25,7 @@ Provides-Extra: tracking
 Provides-Extra: multimodal
 License-File: LICENSE
 
-# RAW-Adapter Object Detection (LOD dataset, PASCAL RAW dataset)
+# TA-ISP Object Detection (LOD dataset, PASCAL RAW dataset)
 
 ### 📖 1: Dataset Download
 
@@ -46,7 +46,7 @@ Unzip and place it in $./data$ under this folder, which format as:
          -- trainval
 ```
 
-**PASCAL RAW Dataset** (RAW detection dataset, normal-light/ low-light/ over-exposure):
+**PASCAL RAW Dataset** (RAW detection dataset):
 
 Download LOD dataset from [Google Drive](https://drive.google.com/file/d/1686W89ALVvtfUvK8NMvqWaUCTLBqhW-p/view?usp=sharing) or [百度网盘 (passwd: kjv9)](https://pan.baidu.com/s/1O76R8ZFZdLw88N0b3hT2Tw).
 
@@ -94,84 +94,42 @@ pip install rawpy
 
 ### 📖 3: Model Evaluation
 
-Check the whole pretrain weights at [release](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases).
+Check the whole pretrain weights at [release](https://github.com/CVL-UESTC/TA-ISP/releases).
 
 #### 3.1: **LOD Dataset** config & pretrain weights (ckpt).
 
-Compare methods:
-
-(1). Demosaic (RAW): Model trained on RAW data in LOD dataset
-
-(2). Default ISP: Model trained on sRGB data in LOD dataset
-
-(3). ECCV16-ISP: Model trained on sRGB data translated from [ECCV16-ISP](https://karaimer.github.io/camera-pipeline/)
-
-(4). InvISP: Model trained on sRGB data translated from [InvISP](https://yzxing87.github.io/InvISP/index.html)
-
 RetinaNet - ResNet50 backbone: 
 
-| RAW-Adapter | Demosaic (RAW) | Default ISP | ECCV16-ISP | InvISP | 
-|  ---- |  ---- | ---- | ---- | ----  | 
-|  62.1  / [config](configs/LOD/R_Net_raw_adapter.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/R_Net_RAW_Adapter.pth) |  58.5  / [config](configs/LOD/R_Net_demosaic.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/R_Net_demosaic.pth) | 58.4  / [config](configs/LOD/R_Net_default_ISP.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/R_Net_default_ISP.pth) | 54.4  / [config](configs/LOD/R_Net_ECCV_16.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/R_Net_ECCV_16.pth) | 56.9  / [config](configs/LOD/R_Net_InvISP.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/R_Net_InvISP.pth) |
+| **TA-ISP** | 63.9 | [config](configs/LOD/R_Net_taisp.py) | [[ckpt]](https://github.com/CVL-UESTC/TA-ISP/releases/download/v0.0/lod_RNet_res50_taisp.pth)
 
-SP-RCNN - ResNet50 backbone: 
 
-| RAW-Adapter | Demosaic (RAW) | Default ISP | ECCV16-ISP | InvISP | 
-|  ---- |  ---- | ---- | ---- | ----  | 
-|  59.2  / [config](configs/LOD/SpRCNN_raw_adapter.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/SP_RCNN_RAW_Adapter.pth) |  57.7  / [config](configs/LOD/SpRCNN_demosaic.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/SP_RCNN_demosaic.pth) | 53.9  / [config](configs/LOD/SpRCNN_default_ISP.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/SP_RCNN_default_ISP.pth) | 52.2  / [config](configs/LOD/SpRCNN_ECCV16.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/SP_RCNN_ECCV_16.pth) | 49.4  / [config](configs/LOD/SpRCNN_InvISP.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/SP_RCNN_InvISP.pth) |
-
-Evaluation of RAW-Adapter or comparision methods, only need single GPU (RAW-Adapter, RetinaNet for example), if you need visulization, please add "--show-dir": 
+Evaluation of TA-ISP, only need single GPU (TA-ISP, RetinaNet for example), if you need visulization, please add "--show-dir": 
 
 ```
-python tools/test.py configs/LOD/R_Net_raw_adapter.py https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.1/R_Net_RAW_Adapter.pth
+python tools/test.py configs/LOD/R_Net_taisp.py https://github.com/CVL-UESTC/TA-ISP/releases/download/v0.0/lod_RNet_res50_taisp.pth
 ```
 
 #### 3.2: **PASCAL RAW Dataset** config & pretrain weights (ckpt):
 
 RetinaNet - ResNet18 backbone: 
 
-|  Light Conditions | **RAW-Adapter** | Demosaic (RAW)  | ECCV16-ISP | InvISP | 
-|  ---- |  ---- |  ---- | ---- | ---- | 
-|  Normal-Light | 88.7  / [config](configs/PASCALRAW_Res18/Normal_Light_raw_adapter_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_RAW_Adapter_res18.pth)  |  87.7  / [config](configs/PASCALRAW_Res18/Normal_Light_demosaic_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_Demosaic_res18.pth) | 88.1  / [config](configs/PASCALRAW_Res18/Normal_Light_eccv16_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_ECCV_16_res18.pth) | 85.4  / [config](configs/PASCALRAW_Res18/Normal_Light_inverse_isp_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_InvISP_res18.pth) |
-|  Over-Exposure |  88.7  / [config](configs/PASCALRAW_Res18/Over_Exp_raw_adapter_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_RAW_Adapter_res18.pth) | 87.7 / [config](configs/PASCALRAW_Res18/Over_Exp_demosaic_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_Demosaic_res18.pth)  | 85.6 / [config](configs/PASCALRAW_Res18/Over_Exp_eccv16_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_ECCV_16_res18.pth) | 86.6 / [config](configs/PASCALRAW_Res18/Over_Exp_inverse_isp_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_InvISP_res18.pth) |
-|  Low-Light | 82.5  / [config](configs/PASCALRAW_Res18/Low_Light_raw_adapter_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_RAW_Adapter_res18.pth)  | 80.3  / [config](configs/PASCALRAW_Res18/Low_Light_demosaic_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_Demosaic_res18.pth)  | 78.8  / [config](configs/PASCALRAW_Res18/Low_Light_eccv16_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_ECCV_16_res18.pth) | 70.9  / [config](configs/PASCALRAW_Res18/Low_Light_inverse_isp_res18.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_InvISP_res18.pth) |
+|  **TA-ISP** | 89.9 | [config](configs/PASCALRAW_Res18/Normal_Light_taisp_res18.py) | [[ckpt]](https://github.com/CVL-UESTC/TA-ISP/releases/download/v0.0/pascalraw_res18_taisp.pth)
 
 RetinaNet - ResNet50 backbone: 
 
-|  Light Conditions | RAW-Adapter | Demosaic (RAW)  | ECCV16-ISP | InvISP | 
-|  ---- |  ---- |  ---- | ---- | ---- | 
-|  Normal-Light | 89.7  / [config](configs/PASCALRAW_Res50/Normal_Light_raw_adapter_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_RAW_Adapter_res50.pth)  |  89.2  / [config](configs/PASCALRAW_Res50/Normal_Light_demosaic_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_Demosaic_res50.pth) | 89.4  / [config](configs/PASCALRAW_Res50/Normal_Light_eccv16_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_ECCV_16_res50.pth) | 87.6  / [config](configs/PASCALRAW_Res50/Normal_Light_inverse_isp_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/Normal_InvISP_res50.pth) |
-|  Over-Exposure |  89.5  / [config](configs/PASCALRAW_Res50/Over_Exp_raw_adapter_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_RAW_Adapter_res50.pth) | 88.8 / [config](configs/PASCALRAW_Res50/Over_Exp_demosaic_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_Demosaic_res50.pth)  | 86.8 / [config](configs/PASCALRAW_Res50/Over_Exp_eccv16_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_ECCV_16_res50.pth) | 87.3 / [config](configs/PASCALRAW_Res50/Over_Exp_inverse_isp_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/OE_InvISP_res50.pth) |
-|  Low-Light | 86.6  / [config](configs/PASCALRAW_Res50/Low_Light_raw_adapter_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_RAW_Adapter_res50.pth)  | 82.6  / [config](configs/PASCALRAW_Res50/Low_Light_demosaic_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_Demosaic_res50.pth)  | 79.6  / [config](configs/PASCALRAW_Res50/Low_Light_eccv16_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_ECCV_16_res50.pth) | 74.7  / [config](configs/PASCALRAW_Res50/Low_Light_inverse_isp_res50.py)  [[ckpt]](https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_InvISP_res50.pth) |
+| **TA-ISP** | 90.2 | [config](configs/PASCALRAW_Res50/Normal_Light_raw_adapter_res50.py) | [[ckpt]](https://github.com/CVL-UESTC/TA-ISP/releases/download/v0.0/pascalraw_res50_taisp.pth)
 
-Evaluation of RAW-Adapter or comparision methods, only need single GPU (RAW-Adapter, ResNet18, Low-light for example), if you need visulization, please add "--show-dir": 
+Evaluation of TA-ISP, only need single GPU (TA-ISP, ResNet18), if you need visulization, please add "--show-dir": 
 
 ```
-python tools/test.py configs/PASCALRAW_Res18/Low_Light_raw_adapter_res18.py https://github.com/cuiziteng/ECCV_RAW_Adapter/releases/download/1.0.2/LL_RAW_Adapter_res18.pth
+python tools/test.py configs/PASCALRAW_Res18/Normal_Light_taisp_res18.py https://github.com/CVL-UESTC/TA-ISP/releases/download/v0.0/pascalraw_res18_taisp.pth
 ```
 
 ### 📖 4: Model Training (Optional)
 
-We default train all RetinaNet model on 1 GPU: (PASCAL RAW dataset, RAW-Adapter (ResNet-18) for example)
-
 ```
-python tools/train.py configs/PASCALRAW_Res18/Normal_Light_raw_adapter_res18.py   ## Normal-light
-
-python tools/train.py configs/PASCALRAW_Res18/Low_Light_raw_adapter_res18.py   ## Low-light
-
-python tools/train.py configs/PASCALRAW_Res18/Over_Exp_raw_adapter_res50.py   ## Over-exposure
+sh tools/train.sh
 ```
-
-We default train all SP-RCNN model on 4 GPUs: (LOD dataset, RAW-Adapter for example)
-
-```
-CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29588 bash tools/dist_train.sh configs/LOD/SpRCNN_raw_adapter.py
-```
-
-
-### 📖 5: Additional  Information
-
-If you want to editing the code or find out details of RAW-Adapter, direct refer to [mmdet/models/backbones/RAW_Adapter](mmdet/models/backbones/RAW_Adapter) and [mmdet/models/backbones/RAW_resnet.py](mmdet/models/backbones/RAW_resnet.py).
 
 
 ### 📖 Acknowledgement:

@@ -8,21 +8,6 @@ terminaltables
 tqdm
 
 [all]
-cython
-numpy
-cityscapesscripts
-emoji
-fairscale
-imagecorruptions
-scikit-learn
-matplotlib
-numpy
-pycocotools
-scipy
-shapely
-six
-terminaltables
-tqdm
 
 [build]
 cython
