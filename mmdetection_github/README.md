@@ -108,3 +108,29 @@ sh tools/train.sh
 ### 📖 Acknowledgement:
 
 We thanks mmdetection & LOD & PASCAL RAW for their excellent code base & dataset.
+
+
+## YOLO (LOAD/RAOD 同款结构) 训练 LOD COCO
+
+已在 `mmdetection_github` 下新增与 `RAOD`（即你提到的 LOAD）同款的 YOLOX 工程结构：`main.py`、`train.sh`、`eval.sh`、`models/`、`yolox/`、`scripts/`，并提供 `lod_yolox_tiny.py` 作为 LOD COCO 训练配置。
+
+### 数据组织（COCO 格式）
+```
+./data/LOD_BMVC2021_COCO/
+  annotations/
+    instances_train.json
+    instances_val.json
+  train/
+  val/
+```
+
+### 训练
+```bash
+bash train.sh
+```
+
+### 评估
+```bash
+bash eval.sh
+```
+
