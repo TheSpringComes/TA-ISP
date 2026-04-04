@@ -22,7 +22,8 @@ class DataPrefetcher:
 
     def preload(self):
         try:
-            self.next_input, self.next_target, _, _, _ = next(self.loader)
+            batch = next(self.loader)
+            self.next_input, self.next_target = batch[0], batch[1]
         except StopIteration:
             self.next_input = None
             self.next_target = None

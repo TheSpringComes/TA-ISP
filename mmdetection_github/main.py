@@ -20,6 +20,9 @@ os.environ["NUMEXPR_NUM_THREADS"] ="4"
 os.environ["OMP_NUM_THREADS"] ="4"
 import numpy as np
 
+_REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+_DEFAULT_YOLOX_EXP = os.path.join(_REPO_ROOT, "lod_yolox_tiny.py")
+
 
 def make_parser():
     parser = argparse.ArgumentParser("YOLOX train parser")
@@ -32,9 +35,15 @@ def make_parser():
     parser.add_argument("--num_machines", default=1, type=int, help="num of node for training")
     parser.add_argument("--machine_rank", default=0, type=int, help="node rank for multi-node training")
 
-    parser.add_argument("-b", "--batch-size", type=int, default=64, help="batch size")
+    parser.add_argument("-b", "--batch-size", type=int, default=4, help="batch size")
     parser.add_argument("-d", "--devices", default=None, type=int, help="device for training")
-    parser.add_argument("-f", "--exp_file", default=None, type=str, help="plz input your experiment description file")
+    parser.add_argument(
+        "-f",
+        "--exp_file",
+        default=_DEFAULT_YOLOX_EXP,
+        type=str,
+        help="experiment description file (default: lod_yolox_tiny.py, LOD MMDet XML)",
+    )
     parser.add_argument("-c", "--ckpt", default='./pre-trained/yolox_tiny.pth', type=str, help="checkpoint file")
     # parser.add_argument("-c", "--ckpt", default='/home/chenkai/RAOD/pre-trained/yolox_nano.pth', type=str, help="checkpoint file")
     # parser.add_argument("-c", "--ckpt", default='/home/chenkai/RAOD/pre-trained/yolox_l.pth', type=str, help="checkpoint file")

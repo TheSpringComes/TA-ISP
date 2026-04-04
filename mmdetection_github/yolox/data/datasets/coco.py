@@ -11,24 +11,50 @@ from ..dataloading import get_yolox_datadir
 from .datasets_wrapper import Dataset
 
 
+def _resolve_coco_ann_path(data_dir, json_file, ann_folder="annotations"):
+    """Support MS-COCO layout (annotations/xxx.json) or flat layout (data_dir/xxx.json)."""
+    candidates = []
+    if ann_folder:
+        candidates.append(os.path.join(data_dir, ann_folder, json_file))
+    candidates.append(os.path.join(data_dir, json_file))
+    for p in candidates:
+        if os.path.isfile(p):
+            return p
+    raise FileNotFoundError(
+        "COCO annotation JSON not found. Tried:\n  " + "\n  ".join(candidates)
+    )
+
+
 class COCODataset(Dataset):
-    def __init__(self, data_dir, json_file, name, img_size, preproc=None, cache=False):
+    def __init__(
+        self,
+        data_dir,
+        json_file,
+        name,
+        img_size,
+        preproc=None,
+        cache=False,
+        ann_folder="annotations",
+    ):
         """
         COCO dataset initialization. Annotation data are read into memory by COCO API.
         Args:
             data_dir (str): dataset root directory
             json_file (str): COCO json file name
-            name (str): COCO data name (e.g. 'train2017' or 'val2017')
+            name (str): image subdirectory under data_dir (e.g. 'train2017' or 'train')
             img_size (int): target image size after pre-processing
             preproc: data augmentation strategy
+            ann_folder (str): subdir for json (default 'annotations'); set '' or None to use only data_dir/json_file
         """
         super().__init__(img_size)
         if data_dir is None:
             data_dir = os.path.join(get_yolox_datadir(), "COCO")
         self.data_dir = data_dir
         self.json_file = json_file
+        af = ann_folder if ann_folder else ""
+        ann_path = _resolve_coco_ann_path(data_dir, json_file, af)
 
-        self.coco = COCO(os.path.join(self.data_dir, "annotations", self.json_file))
+        self.coco = COCO(ann_path)
         self.ids = self.coco.getImgIds()
         self.class_ids = sorted(self.coco.getCatIds())
         cats = self.coco.loadCats(self.coco.getCatIds())
@@ -45,7 +71,8 @@ class COCODataset(Dataset):
         return len(self.ids)
 
     def __del__(self):
-        del self.imgs
+        if getattr(self, "imgs", None) is not None:
+            del self.imgs
 
     def _load_coco_annotations(self):
         return [self.load_anno_from_ids(_ids) for _ids in self.ids]

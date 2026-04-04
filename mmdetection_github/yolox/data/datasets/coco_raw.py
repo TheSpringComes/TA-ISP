@@ -21,27 +21,46 @@ import numpy as np
 from loguru import logger
 from pycocotools.coco import COCO
 from ..dataloading import get_yolox_datadir
+from .coco import _resolve_coco_ann_path
 from .datasets_wrapper import Dataset
 
 
 class COCORawDataset(Dataset):
-    def __init__(self, data_dir, json_file, name, img_size, preproc=None, cache=False):
+    def __init__(
+        self,
+        data_dir,
+        json_file,
+        name,
+        img_size,
+        preproc=None,
+        cache=False,
+        ann_folder="annotations",
+        image_backend="gzip",
+    ):
         """
-        COCO dataset initialization. Annotation data are read into memory by COCO API.
+        COCO boxes + "raw-range" images for TA-YOLOX (inputs ~[0, 1] float32 BGR after load).
+
         Args:
-            data_dir (str): dataset root directory
-            json_file (str): COCO json file name
-            name (str): COCO data name (e.g. 'train2017' or 'val2017')
-            img_size (int): target image size after pre-processing
-            preproc: data augmentation strategy
+            data_dir: dataset root
+            json_file: COCO JSON basename (e.g. instances_train2017.json) or path relative to
+                data_dir (e.g. annotations_trainval2017/annotations/instances_train2017.json)
+            name: image subdirectory under data_dir (e.g. train2017_SynRAW)
+            ann_folder: subdir for json when json_file is only a basename; use "" if json_file
+                already includes directories from data_dir (same idea as yolox COCODataset).
+            image_backend:
+                - "gzip": gzip-compressed .npy (RAOD pipeline), values divided by 255 after load.
+                - "jpeg": cv2.imread on .jpg/.png (e.g. COCO_Syn / SynRAW + MMDet LoadImageFromFile),
+                  then /255.0 — aligns with DetDataPreprocessor(mean=0, std=255) + TAISP [0,1] input.
         """
         super().__init__(img_size)
         if data_dir is None:
             data_dir = os.path.join(get_yolox_datadir(), "COCO")
         self.data_dir = data_dir
         self.json_file = json_file
-
-        self.coco = COCO(os.path.join(self.data_dir, "annotations", self.json_file))
+        self.image_backend = image_backend
+        af = ann_folder if ann_folder else ""
+        ann_path = _resolve_coco_ann_path(data_dir, json_file, af)
+        self.coco = COCO(ann_path)
         self.ids = self.coco.getImgIds()
         self.class_ids = sorted(self.coco.getCatIds())
         cats = self.coco.loadCats(self.coco.getCatIds())
@@ -139,12 +158,15 @@ class COCORawDataset(Dataset):
     def load_image(self, index):
         file_name = self.annotations[index][3]
         img_file = os.path.join(self.data_dir, self.name, file_name)
-        with gzip.GzipFile(img_file, 'r') as f:
+        if self.image_backend == "jpeg":
+            img = cv2.imread(img_file, cv2.IMREAD_COLOR)
+            assert img is not None, "Failed to read image: {}".format(img_file)
+            return img.astype(np.float32) / 255.0
+        if self.image_backend != "gzip":
+            raise ValueError("image_backend must be 'gzip' or 'jpeg', got {}".format(self.image_backend))
+        with gzip.GzipFile(img_file, "r") as f:
             img = np.load(f)
         img = img / 255.0
-        # print(img.max())
-        # print(img.shape)
-        
         assert img is not None
         return img
 

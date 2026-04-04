@@ -31,6 +31,9 @@ from yolox.core import launch
 from yolox.exp import get_exp
 from yolox.utils import configure_nccl, fuse_model, get_local_rank, get_model_info, setup_logger
 
+_REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+_DEFAULT_YOLOX_EXP = os.path.join(_REPO_ROOT, "lod_yolox_tiny.py")
+
 
 def make_parser():
     parser = argparse.ArgumentParser("YOLOX Eval")
@@ -60,9 +63,9 @@ def make_parser():
     parser.add_argument(
         "-f",
         "--exp_file",
-        default=None,
+        default=_DEFAULT_YOLOX_EXP,
         type=str,
-        help="pls input your expriment description file",
+        help="experiment file (default: lod_yolox_tiny.py, LOD MMDet XML)",
     )
     parser.add_argument("-c", "--ckpt", default=None, type=str, help="ckpt for eval")
     parser.add_argument("--conf", default=None, type=float, help="test conf")

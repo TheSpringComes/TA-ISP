@@ -18,11 +18,12 @@
 # ============================================================================
 
 
-# from .coco import COCODataset
-from .coco_raw import COCORawDataset # 2023-04-19 Modified by Huawei, add raw dataloader
-from .imx490_classes import COCO_CLASSES # 2023-04-19 Modified by Huawei, add class names
+from .coco import COCODataset
+from .coco_raw import COCORawDataset  # gzip numpy (RAOD-style)
+from .imx490_classes import COCO_CLASSES  # 2023-04-19 Modified by Huawei, add class names
 from .datasets_wrapper import ConcatDataset, Dataset, MixConcatDataset
-from .mosaicdetection import MosaicDetectionRaw
+from .mosaicdetection import MosaicDetection, MosaicDetectionRaw
 from .voc import VOCDetection
 from .coco_origin import COCOOriginDataset
 from .lod import LODDetection
+from .lod_xml import LODXMLDataset

@@ -28,6 +28,10 @@ class Exp(BaseExp):
         self.data_dir = None
         self.train_ann = self.val_ann = self.test_ann = None
         self.train_ims = self.val_ims = self.test_ims = None
+        # MS COCO: annotations/instances_*.json; flat LOD-COCO: set ann_folder=""
+        self.ann_folder = "annotations"
+        self.seed = 0
+        self.output_dir = "./YOLOX_outputs"
 
         # ---------------- transform config ---------------- #
         self.mosaic_prob = 1.0
@@ -88,8 +92,15 @@ class Exp(BaseExp):
 
         local_rank = get_local_rank()
         with wait_for_the_master(local_rank):
-            dataset = COCODataset(data_dir=self.data_dir, json_file=self.train_ann, name=self.train_ims, img_size=self.input_size,
-                preproc=TrainTransform(max_labels=50, flip_prob=self.flip_prob, hsv_prob=self.hsv_prob), cache=cache_img)
+            dataset = COCODataset(
+                data_dir=self.data_dir,
+                json_file=self.train_ann,
+                name=self.train_ims,
+                img_size=self.input_size,
+                preproc=None,
+                cache=cache_img,
+                ann_folder=self.ann_folder,
+            )
 
         dataset = MosaicDetection(dataset, mosaic=not no_aug, img_size=self.input_size,
             preproc=TrainTransform(max_labels=120, flip_prob=self.flip_prob, hsv_prob=self.hsv_prob),
@@ -197,6 +208,7 @@ class Exp(BaseExp):
             name=self.val_ims if not testdev else self.test_ims,
             img_size=self.test_size,
             preproc=ValTransform(legacy=legacy),
+            ann_folder=self.ann_folder,
         )
 
         if is_distributed:

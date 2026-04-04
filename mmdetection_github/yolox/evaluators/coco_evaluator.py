@@ -76,7 +76,8 @@ class COCOEvaluator:
             model(x)
             model = model_trt
 
-        for cur_iter, (imgs, _, info_imgs, ids, filename) in enumerate(progress_bar(self.dataloader)):
+        for cur_iter, batch in enumerate(progress_bar(self.dataloader)):
+            imgs, _, info_imgs, ids = batch[0], batch[1], batch[2], batch[3]
             with torch.no_grad():
                 imgs = imgs.type(tensor_type)
                 # print(ids)
@@ -101,7 +102,7 @@ class COCOEvaluator:
                     nms_end = time_synchronized()
                     nms_time += nms_end - infer_end
 
-            data_list.extend(self.convert_to_coco_format(outputs, info_imgs, ids, filename))
+            data_list.extend(self.convert_to_coco_format(outputs, info_imgs, ids))
             
         statistics = torch.cuda.FloatTensor([inference_time, nms_time, n_samples])
         if distributed:
@@ -113,34 +114,39 @@ class COCOEvaluator:
         synchronize()
         return eval_results
 
-    def convert_to_coco_format(self, outputs, info_imgs, ids, filename):
+    def convert_to_coco_format(self, outputs, info_imgs, ids):
+        coco_gt = self.dataloader.dataset.coco
+        cat_ids = getattr(self.dataloader.dataset, "class_ids", None)
         data_list = []
-        for (output, img_h, img_w, img_id) in zip(outputs, info_imgs[0], info_imgs[1], ids):
+        for (output, img_h, img_w, img_id_tensor) in zip(
+            outputs, info_imgs[0], info_imgs[1], ids
+        ):
             if output is None:
                 continue
             output = output.cpu()
 
             bboxes = output[:, 0:4]
 
-            # preprocessing: resize
             scale = min(self.img_size[0] / float(img_h), self.img_size[1] / float(img_w))
             bboxes /= scale
             bboxes = xyxy2xywh(bboxes)
 
             cls = output[:, 6]
             scores = output[:, 4] * output[:, 5]
-            # print(bboxes.shape[0])
-            # assert 1==2
+            img_id = int(img_id_tensor.item()) if torch.is_tensor(img_id_tensor) else int(img_id_tensor)
+            im = coco_gt.loadImgs(img_id)[0]
+            file_name = im["file_name"]
             for ind in range(bboxes.shape[0]):
-                label = self.dataloader.dataset.class_ids[int(cls[ind])]
+                ci = int(cls[ind])
+                category_id = cat_ids[ci] if cat_ids is not None else ci + 1
                 pred_data = {
-                    "file_name": str(filename[(img_id%8) // 2].split('.')[0]),
-                    "image_id": int(img_id),
-                    "category_id": label,
+                    "file_name": str(file_name),
+                    "image_id": img_id,
+                    "category_id": category_id,
                     "bbox": bboxes[ind].numpy().tolist(),
                     "score": scores[ind].numpy().item(),
                     "segmentation": [],
-                }  # COCO json format
+                }
                 data_list.append(pred_data)
         return data_list
 

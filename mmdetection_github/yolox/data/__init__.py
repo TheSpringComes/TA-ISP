@@ -16,7 +16,7 @@
 # limitations under the License.
 # ============================================================================
 
-from .data_augment import TrainTransformRaw, ValTransformRaw
+from .data_augment import TrainTransform, TrainTransformRaw, ValTransform, ValTransformRaw
 from .data_prefetcher import DataPrefetcher
 from .dataloading import DataLoader, get_yolox_datadir, worker_init_reset_seed
 from .datasets import *
