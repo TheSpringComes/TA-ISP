@@ -32,10 +32,10 @@ def make_parser():
     parser.add_argument("--num_machines", default=1, type=int, help="num of node for training")
     parser.add_argument("--machine_rank", default=0, type=int, help="node rank for multi-node training")
 
-    parser.add_argument("-b", "--batch-size", type=int, default=64, help="batch size")
+    parser.add_argument("-b", "--batch-size", type=int, default=4, help="batch size")
     parser.add_argument("-d", "--devices", default=None, type=int, help="device for training")
     parser.add_argument("-f", "--exp_file", default=None, type=str, help="plz input your experiment description file")
-    parser.add_argument("-c", "--ckpt", default='/home/chenkai/RAOD/pre-trained/yolox_tiny.pth', type=str, help="checkpoint file")
+    parser.add_argument("-c", "--ckpt", default='./pre-trained/yolox_tiny.pth', type=str, help="checkpoint file")
     # parser.add_argument("-c", "--ckpt", default='/home/chenkai/RAOD/pre-trained/yolox_nano.pth', type=str, help="checkpoint file")
     # parser.add_argument("-c", "--ckpt", default='/home/chenkai/RAOD/pre-trained/yolox_l.pth', type=str, help="checkpoint file")
     parser.add_argument("--resume", default=False, action="store_true", help="resume training")

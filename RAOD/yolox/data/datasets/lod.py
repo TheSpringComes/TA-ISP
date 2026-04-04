@@ -77,17 +77,20 @@ class AnnotationTransform(object):
 
 class LODDetection(Dataset):
     """
-    VOC Detection Dataset Object (input is image, target is annotation)
-    Args:
-        root (string): filepath to VOCdevkit folder.
-        image_set (string): imageset to use (eg. 'train', 'val', 'test')
-        transform (callable, optional): transformation to perform on the
-            input image
-        target_transform (callable, optional): transformation to perform on the
-            target `annotation`
-            (eg: take in caption string, return tensor of word indices)
-        dataset_name (string, optional): which dataset to load
-            (default: 'VOC2007')
+    LOD / VOC 风格检测数据：XML 标注 + 按行列表文件。
+
+    两种目录约定（二选一）：
+
+    1) 经典 PASCAL VOC
+       - 列表：``{data_dir}/ImageSets/Main/{image_sets}.txt``（此时 ``image_list_file=None``，
+         ``image_sets`` 填 ``'train'`` / ``'val'`` 等，不含 ``.txt``）
+       - 图像：``{data_dir}/JPEGImages/{id}.png``
+       - 标注：``{data_dir}/Annotations/{id}.xml``
+
+    2) BMVC2021 LOD（与 mmdet ``configs/LOD/R_Net_taisp.py`` 一致）
+       - ``image_list_file='trainval/train.txt'`` 等（相对 ``data_dir``）
+       - ``img_subdir='RAW_dark'``, ``ann_subdir='RAW-dark-Annotations'``
+       - 图像：``{data_dir}/{img_subdir}/{id}{img_ext}``
     """
     def __init__(
         self,
@@ -98,20 +101,38 @@ class LODDetection(Dataset):
         target_transform=AnnotationTransform(),
         dataset_name="LOD_RAW",
         cache=False,
+        image_list_file=None,
+        img_subdir="JPEGImages",
+        ann_subdir="Annotations",
+        img_ext=".png",
     ):
         super().__init__(img_size)
         self.root = data_dir
-        self.image_set = image_sets
         self.img_size = img_size
         self.preproc = preproc
         self.target_transform = target_transform
         self.name = dataset_name
-        self._annopath = os.path.join("%s", "Annotations", "%s.xml")
-        self._imgpath = os.path.join("%s", "JPEGImages", "%s.png")
+        self._img_subdir = img_subdir
+        self._ann_subdir = ann_subdir
+        self._img_ext = img_ext if str(img_ext).startswith(".") else f".{img_ext}"
+
+        if image_list_file is not None:
+            list_path = os.path.join(self.root, image_list_file)
+            self.image_set = os.path.splitext(os.path.basename(image_list_file))[0]
+        else:
+            self.image_set = image_sets
+            list_path = os.path.join(self.root, "ImageSets", "Main", self.image_set + ".txt")
+        self._imagesetfile = list_path
+
+        self._annopath = os.path.join("%s", self._ann_subdir, "%s.xml")
+        self._imgpath = os.path.join("%s", self._img_subdir, "%s" + self._img_ext)
         self._classes = LOD_CLASSES
         self.ids = list()
-        for line in open(os.path.join(self.root, "ImageSets", "Main", self.image_set + ".txt")):
-            self.ids.append((self.root, line.strip()))
+        with open(list_path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    self.ids.append((self.root, line))
 
         self.annotations = self._load_coco_annotations()
         self.imgs = None
@@ -278,8 +299,8 @@ class LODDetection(Dataset):
     def _do_python_eval(self, output_dir="output", iou=0.5):
         rootpath = self.root
         name = self.image_set
-        annopath = os.path.join(rootpath, "Annotations", "{:s}.xml")
-        imagesetfile = os.path.join(rootpath, "ImageSets", "Main", name + ".txt")
+        annopath = os.path.join(rootpath, self._ann_subdir, "{:s}.xml")
+        imagesetfile = self._imagesetfile
         cachedir = os.path.join(self.root, "annotations_cache", "VOC", name)
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
