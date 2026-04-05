@@ -128,6 +128,17 @@ class Trainer:
         # value of epoch will be set in `resume_train`
         model = self.resume_train(model)
 
+        if getattr(self.exp, "freeze_pretrained_yolox_except_isp_and_cls", False):
+            self.exp.apply_freeze_pretrained_yolox_except_isp_and_cls(model)
+            n_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            n_total = sum(p.numel() for p in model.parameters())
+            if self.rank == 0:
+                logger.info(
+                    "freeze_pretrained_yolox_except_isp_and_cls=True: trainable parameters {} / {} ({:.2%})".format(
+                        n_train, n_total, n_train / max(n_total, 1)
+                    )
+                )
+
         # data related init
         self.no_aug = self.start_epoch >= self.max_epoch - self.exp.no_aug_epochs
         self.train_loader = self.exp.get_data_loader(batch_size=self.args.batch_size, is_distributed=self.is_distributed,
