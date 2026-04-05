@@ -57,7 +57,7 @@ class Exp(YoloXBaseExp):
         self.shear = 2.0
         # ---------------- training config ---------------- #
         self.warmup_epochs = 1
-        self.max_epoch = 300
+        self.max_epoch = 100
         self.warmup_lr = 0
         self.basic_lr_per_img = 0.01 / 64.0
         self.scheduler = "yoloxwarmcos"
