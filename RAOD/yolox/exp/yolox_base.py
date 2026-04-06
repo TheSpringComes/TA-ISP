@@ -62,12 +62,12 @@ class Exp(BaseExp):
         self.test_conf = 0.01
         self.nmsthre = 0.65
 
-        # If True after loading init ckpt: train only TAISP + head cls branch (cls_convs, cls_preds);
-        # freeze backbone, head stems, reg/obj branches. See apply_freeze_pretrained_yolox_except_isp_and_cls.
-        self.freeze_pretrained_yolox_except_isp_and_cls = False
+        # If True after loading init ckpt: train only TAISP;
+        # freeze all YOLOX backbone/head parameters. See apply_freeze_pretrained_yolox.
+        self.freeze_pretrained_yolox = False
 
-    def apply_freeze_pretrained_yolox_except_isp_and_cls(self, model):
-        """Set requires_grad: only TAISP and YOLOXHead classification tower train."""
+    def apply_freeze_pretrained_yolox(self, model):
+        """Set requires_grad: only TAISP is trainable."""
         from torch.nn.parallel import DistributedDataParallel as DDP
 
         m = model.module if isinstance(model, DDP) else model
@@ -76,8 +76,6 @@ class Exp(BaseExp):
         for name, p in m.named_parameters():
             unwrapped_name = name[len("module.") :] if name.startswith("module.") else name
             if unwrapped_name.startswith("TAISP."):
-                p.requires_grad = True
-            elif "head.cls_convs" in unwrapped_name or "head.cls_preds" in unwrapped_name:
                 p.requires_grad = True
 
     def get_model(self):

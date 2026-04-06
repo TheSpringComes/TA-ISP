@@ -128,13 +128,13 @@ class Trainer:
         # value of epoch will be set in `resume_train`
         model = self.resume_train(model)
 
-        if getattr(self.exp, "freeze_pretrained_yolox_except_isp_and_cls", False):
-            self.exp.apply_freeze_pretrained_yolox_except_isp_and_cls(model)
+        if getattr(self.exp, "freeze_pretrained_yolox", False):
+            self.exp.apply_freeze_pretrained_yolox(model)
             n_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
             n_total = sum(p.numel() for p in model.parameters())
             if self.rank == 0:
                 logger.info(
-                    "freeze_pretrained_yolox_except_isp_and_cls=True: trainable parameters {} / {} ({:.2%})".format(
+                    "freeze_pretrained_yolox=True: trainable parameters {} / {} ({:.2%})".format(
                         n_train, n_total, n_train / max(n_total, 1)
                     )
                 )

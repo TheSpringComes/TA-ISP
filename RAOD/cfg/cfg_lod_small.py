@@ -68,7 +68,7 @@ class Exp(YoloXBaseExp):
         self.min_lr_ratio = 0.05
         self.ema = True
 
-        self.freeze_pretrained_yolox_except_isp_and_cls = False
+        self.freeze_pretrained_yolox = False
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
