@@ -168,7 +168,7 @@ class Trainer:
             self.tblogger = SummaryWriter(self.file_name)
 
         logger.info("Training start...")
-        logger.info("\n{}".format(model))
+        # logger.info("\n{}".format(model))
 
     def after_train(self):
         logger.info("Training of experiment is done and the best AP50 is {:.2f}".format(self.best_ap * 100))

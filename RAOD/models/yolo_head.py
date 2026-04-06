@@ -15,7 +15,16 @@ from .network_blocks import BaseConv, DWConv
 
 
 class YOLOXHead(nn.Module):
-    def __init__(self, num_classes, width=1.0, strides=[8, 16, 32], in_channels=[256, 512, 1024], act="silu", depthwise=False):
+    def __init__(
+            self,
+            num_classes,
+            width=1.0,
+            strides=[8, 16, 32],
+            in_channels=[256, 512, 1024],
+            act="silu",
+            depthwise=False,
+            class_loss_weights=None,
+        ):
         """
         Args:
             act (str): activation type of conv. Defalut value: "silu".
@@ -52,6 +61,15 @@ class YOLOXHead(nn.Module):
         self.iou_loss = IOUloss(reduction="none")
         self.strides = strides
         self.grids = [torch.zeros(1)] * len(in_channels)
+        # added codes: class_loss_weights
+        if class_loss_weights is None:
+            class_loss_weights = [1.0] * self.num_classes # [num_classes]
+        assert len(class_loss_weights) == self.num_classes, \
+            f"class_loss_weights len={len(class_loss_weights)} != num_classes={self.num_classes}"
+        self.register_buffer(
+            "class_loss_weights",
+            torch.tensor(class_loss_weights, dtype=torch.float32)
+        )
 
     def initialize_biases(self, prior_prob):
         for conv in self.cls_preds:
@@ -227,7 +245,11 @@ class YOLOXHead(nn.Module):
         num_fg = max(num_fg, 1)
         loss_iou = (self.iou_loss(bbox_preds.view(-1, 4)[fg_masks], reg_targets)).sum() / num_fg
         loss_obj = (self.bcewithlog_loss(obj_preds.view(-1, 1), obj_targets)).sum() / num_fg
-        loss_cls = (self.bcewithlog_loss(cls_preds.view(-1, self.num_classes)[fg_masks], cls_targets)).sum() / num_fg
+        # loss_cls = (self.bcewithlog_loss(cls_preds.view(-1, self.num_classes)[fg_masks], cls_targets)).sum() / num_fg
+        # add codes
+        raw_cls_loss = self.bcewithlog_loss(cls_preds.view(-1, self.num_classes)[fg_masks], cls_targets)  # [N_fg, C]
+        weighted_cls_loss = raw_cls_loss * self.class_loss_weights.view(1, -1) # [N_fg, C] * [1, C] = [N_fg, C]
+        loss_cls = weighted_cls_loss.sum() / num_fg
         if self.use_l1:
             loss_l1 = (self.l1_loss(origin_preds.view(-1, 4)[fg_masks], l1_targets)).sum() / num_fg
         else:

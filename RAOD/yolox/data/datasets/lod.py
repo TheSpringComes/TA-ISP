@@ -44,7 +44,7 @@ class AnnotationTransform(object):
         Returns:
             a list containing lists of bounding boxes  [bbox coords, class name]
         """
-        res = np.empty((0, 5))
+        res = np.empty((0, 5)) # res means result, 5 means [xmin, ymin, xmax, ymax, label_ind]
         for obj in target.iter("object"):
             difficult = obj.find("difficult")
             if difficult is not None:
@@ -105,6 +105,7 @@ class LODDetection(Dataset):
         img_subdir="JPEGImages",
         ann_subdir="Annotations",
         img_ext=".png",
+        eval_classes=None,
     ):
         super().__init__(img_size)
         self.root = data_dir
@@ -115,7 +116,7 @@ class LODDetection(Dataset):
         self._img_subdir = img_subdir
         self._ann_subdir = ann_subdir
         self._img_ext = img_ext if str(img_ext).startswith(".") else f".{img_ext}"
-
+        
         if image_list_file is not None:
             list_path = os.path.join(self.root, image_list_file)
             self.image_set = os.path.splitext(os.path.basename(image_list_file))[0]
@@ -127,6 +128,13 @@ class LODDetection(Dataset):
         self._annopath = os.path.join("%s", self._ann_subdir, "%s.xml")
         self._imgpath = os.path.join("%s", self._img_subdir, "%s" + self._img_ext)
         self._classes = LOD_CLASSES
+        self._eval_classes = tuple(eval_classes) if eval_classes is not None else self._classes
+        # double check: eval_classes is in the classes
+        unknown = set(self._eval_classes) - set(self._classes)
+        if len(unknown) > 0:
+            raise ValueError(f"eval_classes has unknown class names: {sorted(list(unknown))}")
+
+        self.eval_class_ids = [self._classes.index(c) for c in self._eval_classes]
         self.ids = list()
         with open(list_path) as f:
             for line in f:
@@ -270,11 +278,13 @@ class LODDetection(Dataset):
         return path
 
     def _write_voc_results_file(self, all_boxes):
-        for cls_ind, cls in enumerate(LOD_CLASSES):
-            cls_ind = cls_ind
+        # for cls_ind, cls in enumerate(LOD_CLASSES):
+        #     cls_ind = cls_ind
+        for cls in self._eval_classes:
+            cls_ind = self._classes.index(cls)
             if cls == "__background__":
                 continue
-            print("Writing {} VOC results file".format(cls))
+            print("Writing {} VOC results file".format(cls)) # only write the eval_classes
             filename = self._get_voc_results_file_template().format(cls)
             with open(filename, "wt") as f:
                 for im_ind, index in enumerate(self.ids):
@@ -310,7 +320,8 @@ class LODDetection(Dataset):
         print("Eval IoU : {:.2f}".format(iou))
         if output_dir is not None and not os.path.isdir(output_dir):
             os.mkdir(output_dir)
-        for i, cls in enumerate(LOD_CLASSES):
+        # for i, cls in enumerate(LOD_CLASSES):
+        for cls in self._eval_classes:
 
             if cls == "__background__":
                 continue

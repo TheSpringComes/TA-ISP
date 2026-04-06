@@ -112,6 +112,9 @@ def voc_eval(
         det = [False] * len(R)
         npos = npos + sum(~difficult)
         class_recs[imagename] = {"bbox": bbox, "difficult": difficult, "det": det}
+    if npos == 0:
+        print("Warning: npos is 0 for class {} !".format(classname))
+        return  np.array([]), np.array([]), 0.0
 
     # read dets
     detfile = detpath.format(classname)

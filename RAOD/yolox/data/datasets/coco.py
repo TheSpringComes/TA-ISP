@@ -81,10 +81,10 @@ class COCODataset(Dataset):
         self.imgs = np.memmap(cache_file, shape=(len(self.ids), max_h, max_w, 3), dtype=np.uint8, mode="r+")
 
     def load_anno_from_ids(self, id_):
-        im_ann = self.coco.loadImgs(id_)[0]
+        im_ann = self.coco.loadImgs(id_)[0] # 获取图片信息
         width = im_ann["width"]
         height = im_ann["height"]
-        anno_ids = self.coco.getAnnIds(imgIds=[int(id_)], iscrowd=False)
+        anno_ids = self.coco.getAnnIds(imgIds=[int(id_)], iscrowd=False) # 获取标注信息
         annotations = self.coco.loadAnns(anno_ids)
         objs = []
         for obj in annotations:
@@ -130,14 +130,14 @@ class COCODataset(Dataset):
     def pull_item(self, index):
         id_ = self.ids[index]
 
-        res, img_info, resized_info, _ = self.annotations[index]
+        res, img_info, resized_info, filename = self.annotations[index]
         if self.imgs is not None:
             pad_img = self.imgs[index]
             img = pad_img[: resized_info[0], : resized_info[1], :].copy()
         else:
             img = self.load_resized_img(index)
 
-        return img, res.copy(), img_info, np.array([id_])
+        return img, res.copy(), img_info, np.array([id_]), filename
 
     @Dataset.mosaic_getitem
     def __getitem__(self, index):
@@ -159,8 +159,8 @@ class COCODataset(Dataset):
                 h, w (int): original shape of the image
             img_id (int): same as the input index. Used for evaluation.
         """
-        img, target, img_info, img_id = self.pull_item(index)
+        img, target, img_info, img_id, filename = self.pull_item(index)
 
         if self.preproc is not None:
             img, target = self.preproc(img, target, self.input_dim)
-        return img, target, img_info, img_id
+        return img, target, img_info, img_id, filename

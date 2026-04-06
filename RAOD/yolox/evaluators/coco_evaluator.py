@@ -115,7 +115,7 @@ class COCOEvaluator:
 
     def convert_to_coco_format(self, outputs, info_imgs, ids, filename):
         data_list = []
-        for (output, img_h, img_w, img_id) in zip(outputs, info_imgs[0], info_imgs[1], ids):
+        for (output, img_h, img_w, img_id, file_name) in zip(outputs, info_imgs[0], info_imgs[1], ids, filename):
             if output is None:
                 continue
             output = output.cpu()
@@ -134,7 +134,7 @@ class COCOEvaluator:
             for ind in range(bboxes.shape[0]):
                 label = self.dataloader.dataset.class_ids[int(cls[ind])]
                 pred_data = {
-                    "file_name": str(filename[(img_id%8) // 2].split('.')[0]),
+                    "file_name": str(file_name).split('.')[0],
                     "image_id": int(img_id),
                     "category_id": label,
                     "bbox": bboxes[ind].numpy().tolist(),

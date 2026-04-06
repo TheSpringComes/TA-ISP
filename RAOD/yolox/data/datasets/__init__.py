@@ -18,7 +18,7 @@
 # ============================================================================
 
 
-# from .coco import COCODataset
+from .coco import COCODataset
 from .coco_raw import COCORawDataset # 2023-04-19 Modified by Huawei, add raw dataloader
 from .imx490_classes import COCO_CLASSES # 2023-04-19 Modified by Huawei, add class names
 from .datasets_wrapper import ConcatDataset, Dataset, MixConcatDataset

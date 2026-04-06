@@ -22,7 +22,7 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 from yolox.exp import Exp as YoloXBaseExp
-
+from yolox.data.datasets.lod_classes import LOD_CLASSES, LOD_EVAL_CLASSES
 _RAOD_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
@@ -30,7 +30,8 @@ class Exp(YoloXBaseExp):
     def __init__(self):
         super(Exp, self).__init__()
         # ---------------- model config (YOLOX-S) ---------------- #
-        self.num_classes = 8
+        self.num_classes = len(LOD_CLASSES)
+        self.eval_classes = LOD_EVAL_CLASSES
         self.depth = 0.33
         self.width = 0.50
         self.act = 'silu'
@@ -81,6 +82,13 @@ class Exp(YoloXBaseExp):
         self.nmsthre = 0.65
         self.seed = 0
 
+        # 纯干扰类：不参与分类loss（按类名映射，不依赖类别顺序）
+        self.zero_loss_classes = tuple(c for c in LOD_CLASSES if c not in self.eval_classes)
+        class_weight_map = {c: 1.0 for c in LOD_CLASSES}
+        for c in self.zero_loss_classes:
+            class_weight_map[c] = 0.0
+        self.class_loss_weights = [class_weight_map[c] for c in LOD_CLASSES]
+
     def get_model(self, sublinear=False):
         def init_yolo(M):
             for m in M.modules():
@@ -93,7 +101,8 @@ class Exp(YoloXBaseExp):
             in_channels = [256, 512, 1024]
 
             backbone = YOLOPAFPN(self.depth, self.width, in_channels=in_channels, act=self.act, depthwise=False)
-            head = YOLOXHead(self.num_classes, self.width, strides=[16, 32, 64], in_channels=in_channels, act=self.act, depthwise=False)
+            head = YOLOXHead(self.num_classes, self.width, strides=[16, 32, 64], in_channels=in_channels, 
+                             act=self.act, depthwise=False, class_loss_weights=self.class_loss_weights) # added codes: class_loss_weights
             self.model = YOLOX(backbone, head, nf=16, gamma_range=self.gamma_range)
 
         self.model.apply(init_yolo)
@@ -167,6 +176,7 @@ class Exp(YoloXBaseExp):
             preproc=ValTransformRaw(legacy=legacy),
             dataset_name=self.lod_dataset_name,
             cache=False,
+            eval_classes=self.eval_classes,
         )
         if is_distributed:
             batch_size = batch_size // dist.get_world_size()

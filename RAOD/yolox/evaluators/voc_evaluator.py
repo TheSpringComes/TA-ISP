@@ -110,8 +110,10 @@ class VOCEvaluator:
                     infer_end = time_synchronized()
                     inference_time += infer_end - start
 
+                valid_class_ids = getattr(self.dataloader.dataset, "eval_class_ids", None)
                 outputs = postprocess(
-                    outputs, self.num_classes, self.confthre, self.nmsthre
+                    outputs, self.num_classes, self.confthre, self.nmsthre, 
+                    valid_class_ids=valid_class_ids
                 )
                 if is_time_record:
                     nms_end = time_synchronized()

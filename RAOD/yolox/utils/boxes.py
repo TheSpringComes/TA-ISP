@@ -29,7 +29,7 @@ def filter_box(output, scale_range):
     return output[keep]
 
 
-def postprocess(prediction, num_classes, conf_thre=0.7, nms_thre=0.45, class_agnostic=False):
+def postprocess(prediction, num_classes, conf_thre=0.7, nms_thre=0.45, class_agnostic=False, valid_class_ids=None):
     box_corner = prediction.new(prediction.shape)
     box_corner[:, :, 0] = prediction[:, :, 0] - prediction[:, :, 2] / 2
     box_corner[:, :, 1] = prediction[:, :, 1] - prediction[:, :, 3] / 2
@@ -44,7 +44,16 @@ def postprocess(prediction, num_classes, conf_thre=0.7, nms_thre=0.45, class_agn
         if not image_pred.size(0):
             continue
         # Get score and class with highest confidence
-        class_conf, class_pred = torch.max(image_pred[:, 5: 5 + num_classes], 1, keepdim=True)
+        # class_conf, class_pred = torch.max(image_pred[:, 5: 5 + num_classes], 1, keepdim=True)
+        # modify: 
+        cls_scores = image_pred[:, 5: 5 + num_classes]
+        if valid_class_ids is not None:
+            cls_scores = cls_scores.clone()
+            valid = torch.zeros(num_classes, dtype=torch.bool, device=cls_scores.device)
+            valid_ids = torch.as_tensor(valid_class_ids, dtype=torch.long, device=cls_scores.device)
+            valid[valid_ids] = True
+            cls_scores[:, ~valid] = -1e8
+        class_conf, class_pred = torch.max(cls_scores, 1, keepdim=True)
 
         conf_mask = (image_pred[:, 4] * class_conf.squeeze() >= conf_thre).squeeze()
         # Detections ordered as (x1, y1, x2, y2, obj_conf, class_conf, class_pred)
