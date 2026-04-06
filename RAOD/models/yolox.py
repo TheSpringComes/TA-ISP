@@ -14,6 +14,25 @@ from torchvision import transforms
 import cv2
 
 
+# class Test_Net(nn.Module):
+#     '''
+#     replace the TAISP with a simple net, 
+#     input: (B, 3, H, W)
+#     output: (B, 3, H, W)
+#     '''
+#     def __init__(self):
+#         super().__init__()
+        
+#         self.conv1 = nn.Conv2d(3, 3, kernel_size=3, padding=1)
+#         self.nonlinear = nn.ReLU()
+#         self.conv2 = nn.Conv2d(3, 3, kernel_size=3, padding=1)
+#     def forward(self, x):
+#         x = self.conv1(x)
+#         x = self.nonlinear(x)
+#         x = self.conv2(x)
+#         return x
+
+
 class YOLOX(nn.Module):
     def __init__(self, backbone=None, head=None, nf=16, 
                  gamma_range=[1.0,4.0]):
@@ -27,9 +46,14 @@ class YOLOX(nn.Module):
             head = YOLOXHead(80)
         self.backbone = backbone
         self.head = head
+
+        # self.test_net = Test_Net()
         
     def forward(self, x, targets=None, return_xtm=False):
+        # print("x.shape: ", x.shape)
         x_tm_01 = self.TAISP(x)
+        # x_tm_01 = self.test_net(x)
+        # print("x_tm_01.shape: ", x_tm_01.shape)
         x_tm = torch.clamp(x_tm_01, 1e-6, 1) * 255.0
         if return_xtm:
             return torch.round(x_tm)
@@ -47,3 +71,11 @@ class YOLOX(nn.Module):
             outputs = self.head(fpn_outs)
         
         return outputs
+
+
+# if __name__ == "__main__":
+#     net = Test_Net()
+#     img = torch.randn(1, 3, 640, 640)
+#     print("img.shape: ", img.shape)
+#     output = net(img)
+#     print("output.shape: ", output.shape)

@@ -71,12 +71,11 @@ class Exp(BaseExp):
         from torch.nn.parallel import DistributedDataParallel as DDP
 
         m = model.module if isinstance(model, DDP) else model
-        for _, p in m.named_parameters():
-            p.requires_grad = False
         for name, p in m.named_parameters():
-            unwrapped_name = name[len("module.") :] if name.startswith("module.") else name
-            if unwrapped_name.startswith("TAISP."):
+            if name.startswith("TAISP."):
                 p.requires_grad = True
+            else:
+                p.requires_grad = False
 
     def get_model(self):
         from models import YOLOX, YOLOPAFPN, YOLOXHead

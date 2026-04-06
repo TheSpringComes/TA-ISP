@@ -112,8 +112,8 @@ class Trainer:
 
 
     def before_train(self):
-        logger.info("args: {}".format(self.args))
-        logger.info("exp value:\n{}".format(self.exp))
+        # logger.info("args: {}".format(self.args))
+        # logger.info("exp value:\n{}".format(self.exp))
 
         # model related init
         torch.cuda.set_device(self.local_rank)
@@ -130,6 +130,8 @@ class Trainer:
 
         if getattr(self.exp, "freeze_pretrained_yolox", False):
             self.exp.apply_freeze_pretrained_yolox(model)
+            for name, param in model.named_parameters():
+                print(name, param.requires_grad)
             n_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
             n_total = sum(p.numel() for p in model.parameters())
             if self.rank == 0:
