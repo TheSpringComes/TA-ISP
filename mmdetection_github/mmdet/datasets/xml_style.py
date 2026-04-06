@@ -50,8 +50,8 @@ class XMLDataset(BaseDetDataset):
         data_list = []
         img_ids = list_from_file(self.ann_file, backend_args=self.backend_args)
         for img_id in img_ids:
-            # file_name = osp.join(self.img_subdir, f'{img_id}.png')
-            file_name = osp.join(self.img_subdir, f'{img_id}.npy.gz')
+            file_name = osp.join(self.img_subdir, f'{img_id}.png')
+            # file_name = osp.join(self.img_subdir, f'{img_id}.npy.gz')
             # print(self.sub_data_root)
             # print(self.ann_subdir)
             # print(img_id)
