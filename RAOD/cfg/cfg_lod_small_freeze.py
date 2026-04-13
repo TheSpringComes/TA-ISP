@@ -54,8 +54,8 @@ class Exp(YoloXBaseExp):
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
-        self.print_interval = 20
-        self.eval_interval = 5
+        self.print_interval = 200
+        self.eval_interval = 1
         self.output_dir = _RAOD_ROOT
         self.exp_name = os.path.split(os.path.realpath(__file__))[1].split('.')[0]
 
